@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="static/js/angular.min.js"></script>
+		<script src="static/js/aurora.js"></script>
+		<style>
+			.menu {
+				position: absolute;
+				background: blue;
+			}
+		</style>
+	</head>
+	<body> 
+		<h1>Article</h1>
+		<div ng-app='auroraApp'> 
+			<div ng-controller='Aurora'>
+				<button ng-click="toggleOverlay()">Toggle Overlay</button>
+				<div class='menu' style='top: [[click_top]]px; left: [[click_left]]px;' ng-show='valid_selection'>
+					<button ng-click="rateSelection(1);">+ 1</button>
+					<button ng-click="rateSelection(-1)">- 1</button>
+					<button>Quote</button>
+				</div>
+				<div id="Article" ng-mouseup="checkSelectEvent($event)" ng-init="init()"> 
+					<span id="[[$index]]" style="background: [[getRating($index)]]" ng-repeat='c in content track by $index'>[[c]]</span>
+				</div>
+				<div ng-repeat='n in hist track by $index'>[[$index]] -> [[n]] : [[getNRatings($index)]]</div>
+			</div>
+		</body>
+	</html>

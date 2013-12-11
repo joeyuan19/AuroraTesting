@@ -1,0 +1,9 @@
+*.pyc
+*.swp
+*.py~
+*.html~
+*.pyc~
+*.db
+build
+
+
