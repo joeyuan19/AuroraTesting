@@ -12,6 +12,7 @@ auroraApp.controller('Aurora',function Puzzle($scope) {
 	};
 	$scope.click_top = 0;
 	$scope.click_left = 0;
+	$scope.mixedColor = false;
 	$scope.article = {'url':'article.html'};	
 	$scope.content = "This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test";
 	$scope.hist = new Array();
@@ -106,7 +107,9 @@ auroraApp.controller('Aurora',function Puzzle($scope) {
 		for (i = 0; i <= n; i++) {
 			if ($scope.hist[i] == null) {
 				$scope.hist[i] = 0;
-				$scope.nRatings[i] = 0;
+				if ($scope.mixedColor) {
+					$scope.nRatings[i] = 0;
+				}
 			}
 		}
 	};
@@ -114,32 +117,41 @@ auroraApp.controller('Aurora',function Puzzle($scope) {
 	$scope.getRating = function(i) {
 		if (!$scope.applyOverlay) return "#FFFFFF";
 		var max = $scope.max, color = 0;
-		/*
-		color = Math.floor(50 + 205*(Math.abs($scope.hist[i])/max));
-		if ($scope.hist[i] > 0) {
-			return "#00" + color.toString(16) + "00";
-		} else if ($scope.hist[i] < 0 ) {
-			return "#" + color.toString(16) + "0000";
+		
+		if (!$scope.mixedColor) {
+			color = Math.floor(50 + 205*(Math.abs($scope.hist[i])/max));
+			if ($scope.hist[i] > 0) {
+				return "#00" + color.toString(16) + "00";
+			} else if ($scope.hist[i] < 0 ) {
+				return "#" + color.toString(16) + "0000";
+			} else {
+				return "#FFFFFF";
+			}
 		} else {
-			return "#FFFFFF";
-		}
-		*/
-		color_pos = Math.floor(50 + 205*(Math.abs($scope.hist[i])/max));
-		color_neg = Math.floor(50 + 205*(Math.abs($scope.nRatings[i]-$scope.hist[i])/max));
-		if ($scope.nRatings[i] == 0) {
-			return "#FFFFFF";
-		} else {
-			return "#" + color_neg.toString(16) + color_pos.toString(16) + "00";
+			color_pos = Math.floor(50 + 205*(Math.abs($scope.hist[i])/max));
+			color_neg = Math.floor(50 + 205*(Math.abs($scope.nRatings[i]-$scope.hist[i])/max));
+			if ($scope.nRatings[i] == 0) {
+				return "#FFFFFF";
+			} else {
+				return "#" + color_neg.toString(16) + color_pos.toString(16) + "00";
+			}
 		}
 	};
 	$scope.addToHist = function(i,rating) {
 		if ($scope.hist[i] == null) {initHist(i);}
-		if (rating > 0) {
-			$scope.hist[i]++;
-		}
-		$scope.nRatings[i]++;
-		if (Math.abs($scope.nRatings[i]) > $scope.max) {
-			$scope.max = Math.abs($scope.hist[i]);
+		if ($scope.mixedColor) {
+			if (rating > 0) {
+				$scope.hist[i]++;
+			}
+			$scope.nRatings[i]++;
+			if (Math.abs($scope.nRatings[i]) > $scope.max) {
+				$scope.max = Math.abs($scope.nRatings[i]);
+			}
+		} else {
+			$scope.hist[i] += rating;	
+			if (Math.abs($scope.hist[i]) > $scope.max) {
+				$scope.max = Math.abs($scope.hist[i]);
+			}
 		}
 	};
 	$scope.getNRatings = function(n){

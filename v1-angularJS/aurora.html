@@ -23,7 +23,9 @@
 				<div id="Article" ng-mouseup="checkSelectEvent($event)" ng-init="init()"> 
 					<span id="[[$index]]" style="background: [[getRating($index)]]" ng-repeat='c in content track by $index'>[[c]]</span>
 				</div>
+				<!--
 				<div ng-repeat='n in hist track by $index'>[[$index]] -> [[n]] : [[getNRatings($index)]]</div>
+				-->
 			</div>
 		</body>
 	</html>
