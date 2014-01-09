@@ -16,8 +16,8 @@ var content = "<p>This is a <b>Test</b>.  " +
 	"<p>To see if Aurora can work when the content is html-ful</p>" +
 	"<p>To see if Aurora can work when the content is html-ful</p>" +
 	"<p>To see if Aurora can work when the content is html-ful</p></div>";
-
 function init() {
+	/* Set up Article */
 	var elm = get('Article'), i, itr = 0, inTag = false, c, html = "";
 	for (i = 0; i < content.length; i++) {
 		c = content.charAt(i);
@@ -25,7 +25,7 @@ function init() {
 			inTag = true;
 		}
 		if (!inTag) {
-			html += '<span class="article-content" id="' + itr + '">' + c + '</span>';
+			html += '<span class="article-content" id="content-index-' + itr + '">' + c + '</span>';
 			itr++;
 		} else {
 			html += content[i];
@@ -36,61 +36,89 @@ function init() {
 	}
 	html.replace(new RegExp("<script.*</script>"),"");
 	elm.innerHTML = html;
-	window.hist = new Array(itr+1);
+	
+	/* Set up variables */
+	console.log(itr);
+	initHist(itr);
+	window.overlay = false;
+	window.validSelection = false;
+
 }
 
-
-// Helper Methods
-function get(id) {
-	return document.getElementById(id);
-}
-
+/* Check for a selection */
 function checkSelectEvent(e) {
+	checkForButton(e);
 	var sel = getSelection();
-	var output = "Check event: ";
-	if (assert_selection(sel)) {
-		if (valid_selection) {
+	if (assertSelection(sel)) {
+		if (window.validSelection) {
 			deselection();
-			valid_selection = false;
+			window.validSelection = false;
 			hideMenu();
-			console.log(output + "fail a");
 			return;
 		}
-		window.valid_selection = true;
+		window.validSelection = true;
 		showMenu(e.pageY,e.pageX);
-		console.log(output + "show b");
-		return;
 	} else {
-		window.valid_selection = false;
+		window.validSelection = false;
 		hideMenu();
-		console.log(output + "fail c");
-		return;
 	}
 	return;
 };
+function checkForButton(e) {
+	if (isChild(e.target,get("Menu"))) {
+		var elm_id = e.target.id;
+		if (elm_id == "menu-btn-up") {
+			rateSelection(1);
+			deselection();
+		} else if (elm_id == "menu-btn-down") {
+			rateSelection(-1);
+			deselection();
+		} else if (elm_id == "menu-btn-quote") {
+			alert("QUOTES COMING SOON");
+			deselection();
+		} else if (elm_id == "menu-btn-toggle") {
+			window.overlay = window.overlay ? false : true;
+			refreshOverlay();
+			deselection();
+		}
+	}
+}
+/* Force deselection of text */
 function deselection() {
-	if (window.valid_selection) {
-		window.valid_selection = false;
+	if (window.validSelection) {
+		window.validSelection = false;
+		hideMenu();
 		var sel = getSelection();
 		sel.removeAllRanges();
 	}
 };
-function assert_selection(sel) {
+/* Assert that a selection is non-empty lives within article */
+function assertSelection(sel) {
 	if (!sel || sel.isCollapsed) {
-		console.log("assert return first");
 		return false;
 	}
 	var range = getRangeObject(getSelection());
-	var ancestor = findFirstCommonAncestor(range.startContainer,range.endContainer);
-	console.log(ancestor);
-	var inBounds = ancestor.id === "Article";
+	var inBounds = inArticle(range.startContainer) && inArticle(range.endContainer); 
 	if (inBounds && sel.toString().length > 0) {
-		console.log("assert return on last check");
 		return true;
 	}
-	console.log("assert return on end");
 	return false;
 };
+/* Detect whether the element passed as an argument is a part of the Article */
+function inArticle(elm) {
+	return isChild(elm,get("Article"));
+}
+function isChild(elm,par) {
+	var itr = elm; 
+	while (itr != document.body && itr != null) {
+		if (itr == par) {
+			return true;
+		}
+		itr = itr.parentNode;
+	}
+	return false;
+};
+/* Selection retrieval desgined for cross-browser compatibility */
 function getSelection() {
 	if (document.selection){
 		return document.selection;
@@ -98,16 +126,21 @@ function getSelection() {
 		return document.getSelection();
 	}
 };
+/* Range retrieval desgined for cross-browser compatibility */
 function getRangeObject(selectionObject) {
-	if (selectionObject.getRangeAt)
+	if (!selectionObject) return;
+	if (selectionObject.getRangeAt) {
+		console.log(selectionObject);
 		return selectionObject.getRangeAt(0);
-	else {
+
+	} else {
 		var range = document.createRange();
 		range.setStart(selectionObject.anchorNode,selectionObject.anchorOffset);
 		range.setEnd(selectionObject.focusNode,selectionObject.focusOffset);
 		return range;
 	}
 };
+/* Show/Hide Menu */
 function showMenu(x,y) {
 	var menu           = get('Menu');
 	menu.style.left    = x+'px';
@@ -120,21 +153,21 @@ function hideMenu() {
 	menu.style.top     = '-100px';
 	menu.style.display = 'none';
 };
-
-
-window.addEventListener("load",init);
-window.addEventListener("mouseup",checkSelectEvent);
-
+/* retrieve the indexed character in the Article */
 function getElementIndex(elm) {
-	if (elm.parentNode) {
-		return parseInt(elm.parentNode.id);	
+	var _elm = elm.nodeName == "#text" ? elm.parentNode : elm;
+	if (_elm) {
+		return parseInt(_elm.id.replace("content-index-",""));
 	} else {
-		return parseInt(elm.getParent().id);
+		return null; 
 	}
+};
+function getElementByIndex(index) {
+	return get("content-index-"+index);
 }
+/* Apply a rating to the article */
 function rateSelection(rating) {
-	var sel   = getSelection();
-	var range = getRangeObject(sel);
+	var range = getRangeObject(getSelection());
 	var start = getElementIndex(range.startContainer),
 		end   = getElementIndex(range.endContainer);
 	if (rating > 0) {
@@ -145,43 +178,56 @@ function rateSelection(rating) {
 	for (var i = start; i <= end; i++) {
 		addToHist(i,rating);
 	}
+	refreshOverlay();
 };
+function addToHist(index,rating) {
+	if (index >= hist.length) return;
+	hist[index] += rating;
+	if (Math.abs(hist[index]) > max) {
+		max = Math.abs(hist[index]);
+	}
+}
+/* Initialize Histogram with existing information about Article */
 function initHist(n) {
-	for (i = 0; i <= n; i++) {
+	// Load existing Highlights
+	// increment appropriately
+	if (window.hist == null) window.hist = new Array(n);
+	for (i = 0; i < n; i++) {
 		if (window.hist[i] == null) {
 			window.hist[i] = 0;
 		}
 	}
+	window.max = 1;
 };
-function getRating(i) {
-	if (!applyOverlay) return "#FFFFFF";
-	var max = max, color = 0;
-	color = Math.floor(50 + 248*(Math.abs(window.hist[i])/max));
-	if (window.hist[i] > 0) {
-		get(""+i).style.background = "#00" + color.toString(16) + "00";
-	} else if (window.hist[i] < 0 ) {
-		get(""+i).style.background = "#" + color.toString(16) + "0000";
+function refreshOverlay() {
+	for (var i = 0; i < window.hist.length; i++) {
+		setRating(i); 
 	}
-}
-function findFirstCommonAncestor(nodeA, nodeB, ancestorsB) {
-	var ancestorsB = ancestorsB || getAncestors(nodeB);
-	if(ancestorsB.length == 0) return null;
-	else if(ancestorsB.indexOf(nodeA) > -1) return nodeA;
-	else if(nodeA == document) return null;
-	else return findFirstCommonAncestor(nodeA.parentNode, nodeB, ancestorsB);
+};
+function setRating(i) {
+	try {
+	if (!window.overlay) {
+		getElementByIndex(i).style.background = "#FFFFFF"; 
+		return;
+	}
+	var color = Math.floor(50 + 205*(Math.abs(window.hist[i])/window.max));
+	if (window.hist[i] > 0) {
+		getElementByIndex(i).style.background = "#00" + color.toString(16) + "00";
+	} else if (window.hist[i] < 0 ) {
+		getElementByIndex(i).style.background = "#" + color.toString(16) + "0000";
+	} else {
+		getElementByIndex(i).style.background = "#FFFFFF"; 
+	}
+	} catch (e) {
+		console.log("Error at: " + i); 
+	}
+};
+
+/* Helper Methods */
+function get(id) {
+	return document.getElementById(id);
 }
 
-function getAncestors(node) {
-	if(node != document) return [node].concat(getAncestors(node.parentNode));
-	else return [node];
-}
 
-if(Array.prototype.indexOf === undefined) {
-	Array.prototype.indexOf = function(element) {
-		for(var i=0, l=this.length; i<l; i++) {
-			if(this[i] == element) return i;
-		}
-		return -1;
-	};
-}
-
+window.addEventListener("load",init);
+window.addEventListener("mouseup",checkSelectEvent);
