@@ -38,7 +38,6 @@ function init() {
 	elm.innerHTML = html;
 	
 	/* Set up variables */
-	console.log(itr);
 	initHist(itr);
 	window.overlay = false;
 	window.validSelection = false;
@@ -130,7 +129,6 @@ function getSelection() {
 function getRangeObject(selectionObject) {
 	if (!selectionObject) return;
 	if (selectionObject.getRangeAt) {
-		console.log(selectionObject);
 		return selectionObject.getRangeAt(0);
 
 	} else {
@@ -206,22 +204,28 @@ function refreshOverlay() {
 };
 function setRating(i) {
 	try {
-	if (!window.overlay) {
-		getElementByIndex(i).style.background = "#FFFFFF"; 
-		return;
-	}
-	var color = Math.floor(50 + 205*(Math.abs(window.hist[i])/window.max));
-    var box_string = "x";
-	if (window.hist[i] > 0) {
-		getElementByIndex(i).style.background = "#00" + color.toString(16) + "00";
-		getElementByIndex(i).style["box-shadow"] = "#00" + color.toString(16) + "00";
-		getElementByIndex(i).style["-moz-box-shadow"] = "#00" + color.toString(16) + "00";
-		getElementByIndex(i).style["-webkit-box-shadow"] = "#00" + color.toString(16) + "00";
-	} else if (window.hist[i] < 0 ) {
-		getElementByIndex(i).style.background = "#" + color.toString(16) + "0000";
-	} else {
-		getElementByIndex(i).style.background = "#FFFFFF"; 
-	}
+        if (!window.overlay) {
+            getElementByIndex(i).style.background = "#FFFFFF"; 
+            return;
+        }
+        var color = Math.floor(50 + 205*(Math.abs(window.hist[i])/window.max));
+        var box = "0px 0px 2px 1px"
+        if (window.hist[i] > 0) {
+            getElementByIndex(i).style.background = "#00" + color.toString(16) + "00";
+            getElementByIndex(i).style["box-shadow"] = box + " #00" + color.toString(16) + "00";
+            getElementByIndex(i).style["-moz-box-shadow"] = box + " #00" + color.toString(16) + "00";
+            getElementByIndex(i).style["-webkit-box-shadow"] = box + " #00" + color.toString(16) + "00";
+        } else if (window.hist[i] < 0 ) {
+            getElementByIndex(i).style.background = "#" + color.toString(16) + "0000";
+            getElementByIndex(i).style["box-shadow"] = box + " #" + color.toString(16) + "0000";
+            getElementByIndex(i).style["-moz-box-shadow"] = box + " #" + color.toString(16) + "0000";
+            getElementByIndex(i).style["-webkit-box-shadow"] = box + " #" + color.toString(16) + "0000";
+        } else {
+            getElementByIndex(i).style.background = "#FFFFFF"; 
+            getElementByIndex(i).style["box-shadow"] = "none";
+            getElementByIndex(i).style["-moz-box-shadow"] = "none";
+            getElementByIndex(i).style["-webkit-box-shadow"] = "none";
+        }
 	} catch (e) {
 		console.log("Error at: " + i); 
 	}
