@@ -211,8 +211,12 @@ function setRating(i) {
 		return;
 	}
 	var color = Math.floor(50 + 205*(Math.abs(window.hist[i])/window.max));
+    var box_string = "x";
 	if (window.hist[i] > 0) {
 		getElementByIndex(i).style.background = "#00" + color.toString(16) + "00";
+		getElementByIndex(i).style["box-shadow"] = "#00" + color.toString(16) + "00";
+		getElementByIndex(i).style["-moz-box-shadow"] = "#00" + color.toString(16) + "00";
+		getElementByIndex(i).style["-webkit-box-shadow"] = "#00" + color.toString(16) + "00";
 	} else if (window.hist[i] < 0 ) {
 		getElementByIndex(i).style.background = "#" + color.toString(16) + "0000";
 	} else {
